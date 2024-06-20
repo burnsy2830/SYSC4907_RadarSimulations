@@ -65,6 +65,11 @@ def calculate_postion_mathamaticaly_hyperbola(tx,rx_1,rx_2,drone):
     
 
 def calculate_postion_numerically_hyperbola(tx,rx_1,rx_2,drone):
+    """
+    This is going to need to be tweaked , something is wrong I am p sure
+    
+    
+    """
     a,b,h,k,c,d,h2,k2 = calculate_hyperbola_params(tx,rx_1,rx_2,drone,True)
     initial_guess = np.array([0.0, 0.0])
     bounds = ((0, None), (0, None))  # This specifies x >= 0 and y >= 0
@@ -143,7 +148,6 @@ def calculate_hyperbola_params(tx, rx_1, rx_2, drone,error):
         r_r1 = r_r1 + error_1
         r_t = r_r1 + error_1
         r_r2 = r_r2 + error_2
-
 
     a1 = (r_r1 + r_t) / 2
     b1 = m.sqrt(a1**2 - (l1**2 / 4))
