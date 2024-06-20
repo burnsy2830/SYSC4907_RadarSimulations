@@ -14,39 +14,41 @@ from matplotlib import pyplot as plt
 from math import pi
 
 def cli():
-    #transmiter 
-    #input_tx = input("Enter Location of Tx in the format x,y no brackets")
-    #parts = input_tx.split(',')
-    #tx = tuple(int(x) for x in parts)
-    #reciver 1
-    #input_rx1 = input("Enter Location of Rx_1 in the format x,y no brackets")
-    #parts = input_rx1.split(',')
-    #rx_1 = tuple(int(x) for x in parts)
-    #reciver 2
-    #input_rx2 = input("Enter Location of Rx_2 in the format x,y no brackets")
-    #parts = input_rx2.split(',')
-    #rx_2 = tuple(int(x) for x in parts)
-    #Drone Location
-    #print("\n Gennorating Random location of drone ..")
-    #rand_1 = rand.randint(1,100)
-    #rand_2 = rand.randint(1,100)
-    #drone = (rand_1,rand_2)
+    while True:
+        #transmiter 
+        input_tx = input("Enter Location of Tx in the format x,y no brackets")
+        parts = input_tx.split(',')
+        tx = tuple(int(x) for x in parts)
+        #reciver 1
+        input_rx1 = input("Enter Location of Rx_1 in the format x,y no brackets")
+        parts = input_rx1.split(',')
+        rx_1 = tuple(int(x) for x in parts)
+        #reciver 2
+        input_rx2 = input("Enter Location of Rx_2 in the format x,y no brackets")
+        parts = input_rx2.split(',')
+        rx_2 = tuple(int(x) for x in parts)
+        #Drone Location
+        print("\n Gennorating Random location of drone ..")
+        rand_1 = rand.randint(1,100)
+        rand_2 = rand.randint(1,100)
+        drone = (rand_1,rand_2)
 
-    option = input("Enter Simulation Method h for TDOA , E for range sum, m for more options")
-    if option == "H":
-         select = input("N for numerically, M for mathematically")
-         if select == "M":
-            calculate_postion_mathamaticaly_hyperbola(tx=(5,0),rx_1=(-5,0),rx_2=(-11,0), drone=(0,m.sqrt(75)))
-         if select == "N":
-            calculate_postion_numerically_hyperbola(tx=(5,0),rx_1=(-5,0),rx_2=(-11,0), drone=(0,m.sqrt(75)))
-        
-    if option == "E":
-        select = input("N for numerically, M for mathematically")
-        if select == "M":
-            calculate_position_mathematically_ellipse(tx=(5,0),rx_1=(-5,0),rx_2=(-11,0), drone=(0,m.sqrt(75)))
-        if select == "N":
-            calculate_position_numerically_ellipse(tx=(5,0),rx_1=(-5,0),rx_2=(-11,0), drone=(0,m.sqrt(75)))
+        option = input("Enter Simulation Method h for TDOA , E for range sum, m for more options")
+        if option == "H":
+            select = input("N for numerically, M for mathematically")
+            if select == "M":
+                calculate_postion_mathamaticaly_hyperbola(tx,rx_1,rx_2, drone)
+            if select == "N":
+                calculate_postion_numerically_hyperbola(tx,rx_1,rx_2, drone)
             
+        if option == "E":
+            select = input("N for numerically, M for mathematically")
+            if select == "M":
+                calculate_position_mathematically_ellipse(tx, rx_1, rx_2, drone)
+            if select == "N":
+                calculate_position_numerically_ellipse(tx, rx_1, rx_2, drone)
+            
+                
 
 
 def calculate_postion_mathamaticaly_hyperbola(tx,rx_1,rx_2,drone):
@@ -122,6 +124,10 @@ def calculate_position_mathematically_ellipse(tx, rx_1, rx_2, drone):
 
 
 def calculate_hyperbola_params(tx, rx_1, rx_2, drone,error):
+    """
+    This calculates Hyperbola paramiters, if you need more information on what is being done here, consult the document.
+
+    """
     l1 = m.sqrt((tx[0] - rx_1[0])**2 + (tx[1] - rx_1[1])**2)
     l2 = m.sqrt((tx[0] - rx_2[0])**2 + (tx[1] - rx_2[1])**2)
 
@@ -214,6 +220,9 @@ def calculate_ellipse_params(tx, rx_1, rx_2, drone,error):
 
 
 def distance_from_ellipses(point, a1, b1, h1, k1, a2, b2, h2, k2):
+    """
+    I am not realy sure how this works lol but ig it does
+    """
     x, y = point
     dist1 = (((x - h1) / a1) ** 2 + ((y - k1) / b1) ** 2 - 1)**2
     dist2 = (((x - h2) / a2) ** 2 + ((y - k2) / b2) ** 2 - 1)**2
@@ -221,6 +230,9 @@ def distance_from_ellipses(point, a1, b1, h1, k1, a2, b2, h2, k2):
 
 
 def distance_from_hyperbola_elipse(point, a1, b1, h1, k1, a2, b2, h2, k2):
+    """
+    I am not realy sure how this works this is gonna need tweaking.
+    """
     x, y = point
     dist1 = (((x - h1) / a1) ** 2 + ((y - k1) / b1) ** 2 - 1)**2
     dist2 = (((x - h2) / a2) ** 2 + ((y - k2) / b2) ** 2 - 1)**2
@@ -248,6 +260,10 @@ def plot_ellipses(u1, v1, a1, b1, u2, v2, a2, b2,solution=[]):
 
 
 def plot_ellipse_hyperbola(u1, v1, a1, b1, u2, v2, a2, b2,solution=[]):
+    """
+    Plot the elipses and the hyperbolas all in one thing.
+    
+    """
     t_ellipse = np.linspace(0, 2*np.pi, 100)
     t_hyperbola = np.linspace(-2, 2, 400)  # Adjust the range of t for hyperbola
 
