@@ -1,3 +1,10 @@
+"""
+@Author: Liam Burns 
+@Date: 2024/06/20
+
+This simulates the math behind Bistatic Radar systems.
+"""
+
 import random as rand
 import math as m
 import numpy as np
@@ -27,7 +34,12 @@ def cli():
 
     option = input("Enter Simulation Method h for TDOA , E for range sum, m for more options")
     if option == "H":
-        calculate_postion_mathematically_hyperbola(tx,rx_1,rx_2,drone)
+         select = input("N for numerically, M for mathematically")
+         if select == "M":
+            calculate_postion_mathamaticaly_hyperbola(tx=(5,0),rx_1=(-5,0),rx_2=(-11,0), drone=(0,m.sqrt(75)))
+         if select == "N":
+            calculate_postion_numerically_hyperbola(tx=(5,0),rx_1=(-5,0),rx_2=(-11,0), drone=(0,m.sqrt(75)))
+        
     if option == "E":
         select = input("N for numerically, M for mathematically")
         if select == "M":
@@ -35,13 +47,34 @@ def cli():
         if select == "N":
             calculate_position_numerically_ellipse(tx=(5,0),rx_1=(-5,0),rx_2=(-11,0), drone=(0,m.sqrt(75)))
             
-    else:
-        raise NotImplementedError
 
+
+def calculate_postion_mathamaticaly_hyperbola(tx,rx_1,rx_2,drone):
+   a,b,h,k,c,d,h2,k2 = calculate_hyperbola_params(tx,rx_1,rx_2,drone,False)
+   x = sp.Symbol('x', real=True)
+   y = sp.Symbol('y', real=True)
+   ellipse_eq = (((x-h))**2 / a**2) + ((y-k)**2 / b**2) - 1
+   hyperbola_eq = (((x-h2))**2 / c**2) - ((y-k2)**2 / d**2) - 1
+   solution = sp.solve((ellipse_eq, hyperbola_eq), (x, y))
+   print("\n Sol: ", solution)
+   ans = input("Plot Ellipses? (y/n)")
+   if ans == "y":
+        plot_ellipse_hyperbola(h,k,a,b,h2,k2,c,d,solution)
     
 
-def calculate_postion_mathematically_hyperbola(tx,rx_1,rx_2,drone):
-    raise NotImplementedError
+def calculate_postion_numerically_hyperbola(tx,rx_1,rx_2,drone):
+    a,b,h,k,c,d,h2,k2 = calculate_hyperbola_params(tx,rx_1,rx_2,drone,True)
+    initial_guess = np.array([0.0, 0.0])
+    bounds = ((0, None), (0, None))  # This specifies x >= 0 and y >= 0
+    result = minimize(lambda point: distance_from_ellipses(point, a, b, h, k, c, d, h2, k2), initial_guess, bounds=bounds,method='trust-constr')
+    x_opt, y_opt = result.x
+    solution = [(x_opt,y_opt)]
+    print("SOL:", x_opt,y_opt)
+    ans = input("Plot Ellipses? (y/n)")
+    if ans == "y":
+        plot_ellipse_hyperbola(h,k,a,b,h2,k2,c,d,solution)
+    else:
+        return x_opt, y_opt
     
 
 def calculate_position_numerically_ellipse(tx, rx_1, rx_2, drone,error=True):
@@ -54,15 +87,14 @@ def calculate_position_numerically_ellipse(tx, rx_1, rx_2, drone,error=True):
     a1, b1, k1, h1, a2, b2, h2, k2 = calculate_ellipse_params(tx, rx_1, rx_2, drone,True)
     initial_guess = np.array([0.0, 0.0])
     bounds = ((0, None), (0, None))  # This specifies x >= 0 and y >= 0
-    result = minimize(lambda point: distance_from_ellipses(point, a1, b1, h1, k1, a2, b2, h2, k2), initial_guess, bounds=bounds,method='trust-constr')
+    result = minimize(lambda point: distance_from_hyperbola_elipse(point, a1, b1, h1, k1, a2, b2, h2, k2), initial_guess, bounds=bounds,method='trust-constr')
     x_opt, y_opt = result.x
+    solution = [(x_opt,y_opt)]
     print("SOL:", x_opt,y_opt)
     ans = input("Plot Ellipses? (y/n)")
     if ans == "y":
-        plot_ellipses(h1,k1,a1,b1,h2,k2,a2,b2)
-
+        plot_ellipses(h1,k1,a1,b1,h2,k2,a2,b2,solution)
     else:
-
         return x_opt, y_opt
 
 
@@ -82,13 +114,47 @@ def calculate_position_mathematically_ellipse(tx, rx_1, rx_2, drone):
     print("\n Sol: ", solution)
     ans = input("Plot Ellipses? (y/n)")
     if ans == "y":
-        plot_ellipses(h1,k1,a1,b1,h2,k2,a2,b2)
+        plot_ellipses(h1,k1,a1,b1,h2,k2,a2,b2,solution)
 
     else:
 
         return solution
 
 
+def calculate_hyperbola_params(tx, rx_1, rx_2, drone,error):
+    l1 = m.sqrt((tx[0] - rx_1[0])**2 + (tx[1] - rx_1[1])**2)
+    l2 = m.sqrt((tx[0] - rx_2[0])**2 + (tx[1] - rx_2[1])**2)
+
+    error_1 = rand.uniform(0, 1)
+    error_2 = rand.uniform(0, 25)
+
+    print("\n Distance L1 =", l1)
+    print("\n Distance L2 =", l2)
+    r_r1 = m.sqrt((drone[0] - rx_1[0])**2 + (drone[1] - rx_1[1])**2)
+    r_t = m.sqrt((drone[0] - tx[0])**2 + (drone[1] - tx[1])**2)
+    r_r2 = m.sqrt((drone[0] - rx_2[0])**2 + (drone[1] - rx_2[1])**2)
+    if error == True: 
+        r_r1 = r_r1 + error_1
+        r_t = r_r1 + error_1
+        r_r2 = r_r2 + error_2
+
+
+    a1 = (r_r1 + r_t) / 2
+    b1 = m.sqrt(a1**2 - (l1**2 / 4))
+    h1 = (abs(abs(tx[0]) - abs(rx_1[0])))/2
+    k1 = (abs(abs(tx[1]) - abs(rx_1[1])))/2
+
+    h2 = (abs(abs(tx[0]) - abs(rx_2[0])))/2
+    k2 = (abs(abs(tx[1]) - abs(rx_2[1])))/2
+
+    c = (r_t - r_r2)/2
+    d = m.sqrt((l2**2)/4 - c**2)
+
+    
+    print("\n a1:",a1,"b1:",b1,"h1:",h1,"k1:",k1, "h2:",h2, "k2:",k2,"c:",c,"d:",d,"Rt:",r_t,"Rr1:",r_r1,"Rr2:",r_r2)
+    return a1,b1,h1,k1,c,d,h2,k2
+
+    
 def calculate_ellipse_params(tx, rx_1, rx_2, drone,error):
     """
     Just regular old calcuations of ellipse paramiters (semi major, semi minor, center ext). See my document for how some things are calculated
@@ -122,6 +188,8 @@ def calculate_ellipse_params(tx, rx_1, rx_2, drone,error):
     h1 = (abs(abs(tx[0]) - abs(rx_1[0])))/2
     k1 = (abs(abs(tx[1]) - abs(rx_1[1])))/2
 
+    
+
 
     # Calculate Ellipse 2 params 
 
@@ -152,33 +220,55 @@ def distance_from_ellipses(point, a1, b1, h1, k1, a2, b2, h2, k2):
     return dist1 + dist2
 
 
-def plot_ellipses(u1, v1, a1, b1, u2, v2, a2, b2):
+def distance_from_hyperbola_elipse(point, a1, b1, h1, k1, a2, b2, h2, k2):
+    x, y = point
+    dist1 = (((x - h1) / a1) ** 2 + ((y - k1) / b1) ** 2 - 1)**2
+    dist2 = (((x - h2) / a2) ** 2 + ((y - k2) / b2) ** 2 - 1)**2
+    return dist1 + dist2
+
+
+def plot_ellipses(u1, v1, a1, b1, u2, v2, a2, b2,solution=[]):
     """
     This just provides a visual for the ellipses, will show the overlap. It allows you to verify answers genorated by both methods.
     """
     t = np.linspace(0, 2*pi, 100)
-    plt.plot(u1 - a1 * np.cos(t), v1 + b1 * np.sin(t), label='Ellipse 1')
-    plt.plot(u2 - a2 * np.cos(t), v2 + b2 * np.sin(t), label='Ellipse 2')
+    plt.plot(u1 - a1 * np.cos(t), v1 + b1 * np.sin(t), label='Tx -> Rx1')
+    plt.plot(u2 - a2 * np.cos(t), v2 + b2 * np.sin(t), label='Tx -> Rx2')
     plt.grid(color='lightgray', linestyle='--')
     plt.legend()
+
+    if solution:
+        points_x, points_y = zip(*solution)
+        plt.scatter(points_x, points_y, color='green', label='possible Drone Location')
     plt.axis('equal')
     plt.xlabel('X-axis (m)')
     plt.ylabel('Y-axis (m)')
     plt.title('Bistatic Elipse Overlap')
     plt.show()
 
+
+def plot_ellipse_hyperbola(u1, v1, a1, b1, u2, v2, a2, b2,solution=[]):
+    t_ellipse = np.linspace(0, 2*np.pi, 100)
+    t_hyperbola = np.linspace(-2, 2, 400)  # Adjust the range of t for hyperbola
+
+    # Plot ellipse
+    plt.plot(u1 + a1 * np.cos(t_ellipse), v1 + b1 * np.sin(t_ellipse), label='Range Sum', color='blue')
+
+    # Plot hyperbola
+    plt.plot(u2 + a2 * np.cosh(t_hyperbola), v2 + b2 * np.sinh(t_hyperbola), label='Range Diffrence', color='red')
+    plt.plot(u2 - a2 * np.cosh(t_hyperbola), v2 - b2 * np.sinh(t_hyperbola), color='red')  # Second branch
+
+    if solution:
+        points_x, points_y = zip(*solution)
+        plt.scatter(points_x, points_y, color='green', label='possible Drone Location')
+
+    plt.grid(color='lightgray', linestyle='--')
+    plt.legend()
+    plt.axis('equal')
+    plt.xlabel('X-axis (m)')
+    plt.ylabel('Y-axis (m)')
+    plt.title('Elipse (Range Sum) & Hyperbola (range diffrence)')
+    plt.show()
+
 if __name__ == "__main__":
     cli()
-
-   
-
-
-    
-
-
-
-
-
-
-
-    
