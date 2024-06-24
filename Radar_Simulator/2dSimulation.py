@@ -5,6 +5,7 @@
 This simulates the math behind Bistatic Radar systems.
 """
 
+import threedsim
 import random as rand
 import math as m
 import numpy as np
@@ -16,23 +17,38 @@ from math import pi
 
 def cli():
     while True:
+
+        threedee = input("enter 2d for two-dimentions enther 3d for three.")
+
         # transmiter
-        input_tx = input("Enter Location of Tx in the format x,y no brackets")
+        input_tx = input("Enter Location of Tx in the format x,y,(z) no brackets")
         parts = input_tx.split(",")
         tx = tuple(int(x) for x in parts)
         # reciver 1
-        input_rx1 = input("Enter Location of Rx_1 in the format x,y no brackets")
+        input_rx1 = input("Enter Location of Rx_1 in the format x,y,(z)  no brackets")
         parts = input_rx1.split(",")
         rx_1 = tuple(int(x) for x in parts)
         # reciver 2
-        input_rx2 = input("Enter Location of Rx_2 in the format x,y no brackets")
+        input_rx2 = input("Enter Location of Rx_2 in the format x,y,(z)  no brackets")
         parts = input_rx2.split(",")
         rx_2 = tuple(int(x) for x in parts)
+        if threedee == "3d":
+            input_rx3 = input("Enter Location of Rx_2 in the format x,y,(z)  no brackets")
+            parts = input_rx3.split(",")
+            rx_3 = tuple(int(x) for x in parts)
+
         # Drone Location
         print("\n Gennorating Random location of drone ..")
         rand_1 = rand.randint(1, 100)
         rand_2 = rand.randint(1, 100)
+        if threedee == "3d":
+            rand_3 = rand.randint(1, 100)
+
         drone = (rand_1, rand_2)
+
+        if threedee == "3d":
+            drone = (rand_1, rand_2,rand_3)
+            threedsim.threedeecli(tx,rx_1,rx_2,rx_3,drone)
 
         option = input(
             "Enter Simulation Method h for TDOA , E for range sum, m for more options"
