@@ -33,10 +33,6 @@ def threedeecli(tx,rx_1,rx_2,rx_3,drone):
         if select == "N":
             calculate_position_numericaly_ellipsoid(tx, rx_1, rx_2,rx_3, drone)
     
-
-
-
-
 def calculate_position_numericaly_ellipsoid(tx,rx_1,rx_2,rx_3,drone):
     a1, b1, c1, h1, k1, l1, a2, b2, c2, h2, k2, l2, a3, b3, c3, h3, k3, l3 = calculate_ellipsoid_params(tx, rx_1, rx_2, rx_3, drone, False)
     elips_params = [(a1,b1,c1,h1,k1,l1),
@@ -49,7 +45,6 @@ def calculate_position_numericaly_ellipsoid(tx,rx_1,rx_2,rx_3,drone):
     ans = input("Plot Ellipsoids? (y/n): ")
     if ans == "y":
         plot_ellipsoids(h1, k1, l1, a1, b1, c1, h2, k2, l2, a2, b2, c2, h3, k3, l3, a3, b3, c3, solution,True)
-
 
 def calculate_position_mathematically_ellipsoid(tx, rx_1, rx_2, rx_3, drone):
     a1, b1, c1, h1, k1, l1, a2, b2, c2, h2, k2, l2, a3, b3, c3, h3, k3, l3 = calculate_ellipsoid_params(tx, rx_1, rx_2, rx_3, drone, False)
@@ -70,6 +65,25 @@ def calculate_position_mathematically_ellipsoid(tx, rx_1, rx_2, rx_3, drone):
         plot_ellipsoids(h1, k1, l1, a1, b1, c1, h2, k2, l2, a2, b2, c2, h3, k3, l3, a3, b3, c3, solution,False)
 
 def calculate_position_mathematically_hyperboloid(tx, rx_1, rx_2, rx_3, drone):
+    #This very rarley returns a real answer. This is beacuse 
+    a1, b1, c1, h1, k1, l1, a2, b2, c2, h2, k2, l2, a3, b3, c3, h3, k3, l3 = calculate_hyperboloid_params(tx, rx_1, rx_2, rx_3, drone, False)
+    
+    x, y, z = sp.symbols("x y z",real=True)
+    
+    # Define equations correctly using sp.Eq()
+    eq1 = sp.Eq(((x - h1)**2 / a1**2) + ((y - k1)**2 / b1**2) + ((z - l1)**2 / c1**2), 1)
+    eq2 = sp.Eq(((x - h2)**2 / a2**2) - ((y - k2)**2 / b2**2) - ((z - l2)**2 / c2**2), 1)
+    eq3 = sp.Eq(((x - h3)**2 / a3**2) - ((y - k3)**2 / b3**2) - ((z - l3)**2 / c3**2), 1)
+    
+    # Solve the system of equations
+    solution = sp.solve([eq1, eq2, eq3], (x, y, z))
+    print(solution)
+
+    ans = input("Plot Ellipsoids? (y/n): ")
+    if ans == "y":
+       plot_hyperboloids_and_ellipsoid(a1, b1, c1, h1, k1, l1, a2, b2, c2, h2, k2, l2, a3, b3, c3, h3, k3, l3,[solution.x[0],solution.x[1],solution.x[2]])
+
+def calculate_position_numericaly_hyperboloid(tx, rx_1, rx_2, rx_3, drone):
     # Obtain hyperboloid parameters
     a1, b1, c1, h1, k1, l1, a2, b2, c2, h2, k2, l2, a3, b3, c3, h3, k3, l3 = calculate_hyperboloid_params(tx, rx_1, rx_2, rx_3, drone, False)
 
@@ -162,7 +176,6 @@ def calculate_ellipsoid_params(tx, rx_1, rx_2, rx_3, drone, error):
     
     return a1, b1, c1, h1, k1, l1, a2, b2, c2, h2, k2, l2, a3, b3, c3, h3, k3, l3
 
-
 def calculate_hyperboloid_params(tx, rx_1, rx_2, rx_3, drone, error):
     """
     Calculate the hyperboloid parameters for three receivers and transmitter positions.
@@ -227,7 +240,6 @@ def calculate_hyperboloid_params(tx, rx_1, rx_2, rx_3, drone, error):
 
     return a1, b1, c1, h1, k1, l1,a2, b2, c2, h2, k2, l2,a3, b3, c3, h3, k3, l3
     
-
 def plot_ellipsoids(h1, k1, l1, a1, b1, c1, h2, k2, l2, a2, b2, c2, h3, k3, l3, a3, b3, c3, solution,nu):
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
@@ -292,7 +304,6 @@ def find_intersection(ellipsoids):
     result = minimize(objective_function, initial_guess, method='Nelder-Mead')
 
     return result.x
-
 
 def plot_hyperboloids_and_ellipsoid(a1, b1, c1, h1, k1, l1, a2, b2, c2, h2, k2, l2, a3, b3, c3, h3, k3, l3, solution=None):
     fig = plt.figure(figsize=(10, 8))
