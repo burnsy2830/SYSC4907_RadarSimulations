@@ -252,19 +252,19 @@ def plot_ellipsoids(h1, k1, l1, a1, b1, c1, h2, k2, l2, a2, b2, c2, h3, k3, l3, 
     x1 = h1 + a1 * np.outer(np.cos(u), np.sin(v))
     y1 = k1 + b1 * np.outer(np.sin(u), np.sin(v))
     z1 = l1 + c1 * np.outer(np.ones_like(u), np.cos(v))
-    ax.plot_surface(x1, y1, z1, color='r', alpha=0.5)
+    ax.plot_surface(x1, y1, z1, color='purple', alpha=0.3)
     
     # Plot Ellipsoid 2
     x2 = h2 + a2 * np.outer(np.cos(u), np.sin(v))
     y2 = k2 + b2 * np.outer(np.sin(u), np.sin(v))
     z2 = l2 + c2 * np.outer(np.ones_like(u), np.cos(v))
-    ax.plot_surface(x2, y2, z2, color='g', alpha=0.5)
+    ax.plot_surface(x2, y2, z2, color='g', alpha=0.3)
     
     # Plot Ellipsoid 3
     x3 = h3 + a3 * np.outer(np.cos(u), np.sin(v))
     y3 = k3 + b3 * np.outer(np.sin(u), np.sin(v))
     z3 = l3 + c3 * np.outer(np.ones_like(u), np.cos(v))
-    ax.plot_surface(x3, y3, z3, color='b', alpha=0.5)
+    ax.plot_surface(x3, y3, z3, color='b', alpha=0.3)
     
     # Plot the solution points
     if nu == True: 
@@ -274,7 +274,7 @@ def plot_ellipsoids(h1, k1, l1, a1, b1, c1, h2, k2, l2, a2, b2, c2, h3, k3, l3, 
         for sol in solution:
             if isinstance(sol, tuple):
                 x_sol, y_sol, z_sol = sol
-                ax.scatter(x_sol.evalf(), y_sol.evalf(), z_sol.evalf(), color='r', s=100)
+                ax.scatter(x_sol.evalf(), y_sol.evalf(), z_sol.evalf(), color='r', s=100,alpha=1, edgecolors='black')
     
     ax.set_xlabel('X axis m')
     ax.set_ylabel('Y axis m')
